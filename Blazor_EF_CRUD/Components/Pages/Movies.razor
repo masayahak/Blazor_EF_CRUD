@@ -1,0 +1,67 @@
+﻿@page "/movies"
+@using Blazor_EF_CRUD.Models
+@using Blazor_EF_CRUD.Services
+@inject IMovieService MovieService
+@inject NavigationManager NavigationManager
+@attribute [StreamRendering(true)]
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+<h3>MovieList</h3>
+@if (movies == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <div class="mb-3">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>タイトル</th>
+                    <th>発表</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var movie in movies)
+                {
+                    <tr>
+                        <td class="align-middle">@movie.Title</td>
+                        <td class="align-middle">@movie.ReleaseYear</td>
+                        <td class="align-middle"><button @onclick="() => EditMovie(movie.Id)" class="btn btn-link">編集</button></td>
+                        <td class="align-middle"><button @onclick="() => DeleteMovie(movie.Id)" class="btn btn-danger">削除</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+<div class="mb-3">
+    <button @onclick="CreateMovie" class="btn btn-primary">新しい映画を追加</button>
+</div>
+
+
+@code {
+    List<Movie>? movies = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        movies = await MovieService.GetAllMovies();
+    }
+
+    void CreateMovie(){
+        NavigationManager.NavigateTo("/editmovie");
+    }
+
+    void EditMovie(int id)
+    {
+        NavigationManager.NavigateTo($"/editmovie/{id}");
+    }
+
+    async Task DeleteMovie(int id)
+    {
+        await MovieService.DeleteMovie(id);
+        NavigationManager.NavigateTo(NavigationManager.Uri, true);
+    }
+}
